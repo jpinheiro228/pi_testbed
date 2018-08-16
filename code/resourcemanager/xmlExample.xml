@@ -1,0 +1,31 @@
+<domain type='kvm'>
+    <name>{NAME}</name>
+    <memory unit='GB'>{MEMORY}</memory>
+    <vcpu placement='static'>{CPU}</vcpu>
+    <os>
+        <type arch='x86_64' machine='pc'>hvm</type>
+        <boot dev='hd'/>
+    </os>
+    <features>
+        <acpi/>
+    </features>
+        <on_poweroff>destroy</on_poweroff>
+        <on_reboot>restart</on_reboot>
+        <on_crash>destroy</on_crash>
+    <devices>
+        <emulator>/usr/bin/qemu-system-x86_64</emulator>
+        <disk type='file' device='disk'>
+            <driver name='qemu' type='qcow2'/>
+            <source file='/var/lib/libvirt/images/{NAME}.qcow2'/>
+            <target dev='hda' bus='ide'/>
+        </disk>
+        <interface type='network'>
+            <source network='default'/>
+        </interface>
+        <graphics type='spice' autoport='yes'>
+            <listen type='address'/>
+            <image compression='off'/>
+        </graphics>
+    </devices>
+</domain>
+
