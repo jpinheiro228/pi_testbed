@@ -2,6 +2,8 @@
 
 # Installing dependencies 
 
+sudo apt-get update
+
 sudo apt-get -y install git cmake g++ python-dev swig \
 pkg-config libfftw3-dev libboost-all-dev libcppunit-dev libgsl-dev \
 libusb-dev libsdl1.2-dev python-wxgtk3.0 python-numpy python-cheetah \
