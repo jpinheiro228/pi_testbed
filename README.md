@@ -26,3 +26,10 @@ pi_testbed
 |  +--webserver
 ```
 
+# Project Gantt Chart
+
+The project's Gantt Chart defined below:
+
+![Project Gant Chart](./docs/images/gantt.png)
+
+This chart represents the defined timeline for the project.
