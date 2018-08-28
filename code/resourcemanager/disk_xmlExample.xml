@@ -1,0 +1,9 @@
+<volume>
+    <name>{NAME}.qcow2</name>
+    <allocation>{ALLOCATION}</allocation>
+    <capacity>{SIZE}</capacity>
+    <target>
+        <format type='qcow2'/>
+        <path>/var/lib/libvirt/images/{NAME}.qcow2</path>
+    </target>
+</volume>
