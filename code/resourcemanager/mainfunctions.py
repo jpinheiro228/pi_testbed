@@ -117,8 +117,7 @@ class VirtInstance:
         domain_disk = self.default_pool.storageVolLookupByName(domain.name()
                                                                + ".qcow2")
         if domain.isActive():
-            if domain.shutdown() < 0:
-                domain.destroy()
+            domain.destroy()
         domain.undefine()
         domain_disk.wipe(0)
         domain_disk.delete(0)
@@ -168,6 +167,13 @@ if __name__ == '__main__':
     # Will be removed once all functions are tested.
     try:
         c = VirtInstance()
+        c.create_domain("test")
+        c.start_domain("test")
+        input("RET to continue...")
+        c.stop_domain("test", True)
+        input("RET to continue...")
+        c.start_domain("test")
+        input("RET to continue...")
         c.delete_domain("test")
         c.conn.close()
     except Exception as e:
