@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>GTEL User Manager</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    {% block head_extra %}{% endblock %}
+
+</head>
+
+    <body>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="http://gtel.ufc.br" style="margin-top: -11px">
+                        <img src="{{ url_for('static', filename='images/gtel-logo.png') }}" width="120"/>
+                    </a>
+                </div>
+                <ul class="nav navbar-nav"> <!--Add new pages to the menu HERE!-->
+                    <li><a href="/" class="">Home</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><p class="navbar-text">User section!</p></li>
+                </ul>
+            </div>
+        </nav>
+        <!--Alert area-->
+        <div class="form-signin">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category,message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        </div>
+        <!--End of alert area-->
+
+        <!--Body area-->
+        <div class="container">
+            {% block body %}{% endblock %}
+        </div>
+        <!--End of body area-->
+    </body>
+</html>
+

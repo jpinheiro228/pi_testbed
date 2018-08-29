@@ -1,0 +1,30 @@
+{% extends "base_template.html" %}
+
+{% block body %}
+    <table class="table table-striped">
+        <tr>
+            <td>VM Name</td>
+            <td>Status</td>
+            <td>VCPUs</td>
+            <td>Memory (MB)</td>
+            <td>Actions</td>
+        </tr>
+        {% for vm in vm_dict %}
+        <tr>
+            <td>{{ vm }}</td>
+            <td>{{ vm_dict[vm]["status"] }}</td>
+            <td>{{ vm_dict[vm]["cpus"] }}</td>
+            <td>{{ vm_dict[vm]["memory"] }}</td>
+            <td>
+                {%  if vm_dict[vm]["status"] == "Shut off" %}
+                    <button class="btn btn-primary">Start VM</button>
+                {%  elif vm_dict[vm]["status"] == "Running" %}
+                    <button class="btn btn-warning">Stop VM</button>
+                {% endif %}
+                    <button class="btn btn-danger">Delete VM</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}

@@ -1,6 +1,6 @@
 <domain type='kvm'>
     <name>{NAME}</name>
-    <memory unit='GB'>{MEMORY}</memory>
+    <memory unit='GiB'>{MEMORY}</memory>
     <vcpu placement='static'>{CPU}</vcpu>
     <os>
         <type arch='x86_64' machine='pc'>hvm</type>

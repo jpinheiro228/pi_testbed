@@ -2,6 +2,15 @@ import libvirt
 
 LIBVIRT_URI = "qemu:///system"
 
+dom_state = {0: "No State",
+             1: "Running",
+             2: "Blocked",
+             3: "Paused",
+             4: "Shutdown",
+             5: "Shut off",
+             6: "Crashed",
+             7: "PM Suspended"}
+
 
 class VirtInstance:
     def __init__(self, uri=LIBVIRT_URI):
@@ -11,7 +20,8 @@ class VirtInstance:
             print(e)
             exit(1)
         self.uri = uri
-        self.domains = self.get_dom_dict()
+        self.domains = {}
+        self.update_dom_dict()
         self.default_pool = self.get_default_spool()
 
     @staticmethod
@@ -36,7 +46,7 @@ class VirtInstance:
         default_pool = self.conn.storagePoolLookupByName('default')
         return default_pool
 
-    def get_dom_dict(self):
+    def update_dom_dict(self):
         """ Returns a dictionary of domains of the Hypervisor
 
         The dictionary will be in the format NAME:ID
@@ -46,8 +56,13 @@ class VirtInstance:
         all_domains = self.conn.listAllDomains()
         dom_dict = {}
         for dom in all_domains:
-            dom_dict[dom.name()] = dom.ID()
-        return dom_dict
+            state, maxmem, mem, cpus, cput = dom.info()
+            dom_dict[dom.name()] = {"id": dom.ID(),
+                                    "status": dom_state[state],
+                                    "cpus": cpus,
+                                    "memory": mem/2**10}
+
+        self.domains = dom_dict
 
     def create_domain(self, dom_name=None, num_cpu=1, mem=1):
         """Create a domain using the default XML and a default disk.
