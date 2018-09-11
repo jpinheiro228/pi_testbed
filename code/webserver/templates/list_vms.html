@@ -38,7 +38,10 @@
                     </div>
                     <div class="modal-body">
                         <p>To access your VM, use the following command on a terminal window:</p>
-                        <code>ssh -X ubuntu@{{ vm_dict[vm]["ip"] }}</code>
+                        <code>ssh -X -o ProxyCommand='ssh -W %h:%p hop@192.168.200.220' ubuntu@{{ 
+vm_dict[vm]["ip"] }}</code>
+                        <p>The first password you will be asket is the one for the hop server. The password is 
+<code>aicthop</code>. The second one is for your VM. The password is <code>ubuntu</code></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
