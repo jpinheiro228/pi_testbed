@@ -1,0 +1,30 @@
+{% extends "base_template.html" %}
+
+{% block body %}
+    <form class="form-signin" method="post" enctype=multipart/form-data action="/create">
+        <h2 class="form-signin-heading">New VM</h2>
+        <div class="form-group">
+            <label for="vm_name">Name: </label>
+            <input type="text" class="form-control" name="vm_name" placeholder="VM Name" required>
+        </div>
+        <div class="form-group">
+            <label for="cpu_num">CPUs: </label>
+            <select class="form-control" id="cpu_num" name="cpu_num">
+                <option>1</option>
+                <option>2</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="mem_size">Memory (GB): </label>
+            <select class="form-control form-select-inline" id="mem_size" name="mem_size">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <button class="btn btn-lg btn-success btn-block" type="submit">Create VM</button>
+        </div>
+    </form>
+{% endblock %}

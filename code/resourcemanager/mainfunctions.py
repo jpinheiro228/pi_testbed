@@ -1,4 +1,5 @@
 import libvirt
+import os
 
 LIBVIRT_URI = "qemu:///system"
 
@@ -11,6 +12,7 @@ dom_state = {0: "No State",
              6: "Crashed",
              7: "PM Suspended"}
 
+ag = libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT
 
 class VirtInstance:
     def __init__(self, uri=LIBVIRT_URI):
@@ -56,12 +58,19 @@ class VirtInstance:
         all_domains = self.conn.listAllDomains()
         dom_dict = {}
         for dom in all_domains:
-            state, maxmem, mem, cpus, cput = dom.info()
-            dom_dict[dom.name()] = {"id": dom.ID(),
-                                    "status": dom_state[state],
-                                    "cpus": cpus,
-                                    "memory": mem/2**10}
-
+            if dom.name() != "default":
+                state, maxmem, mem, cpus, cput = dom.info()
+                dom_dict[dom.name()] = {"id": dom.ID(),
+                                        "name": dom.name(),
+                                        "status": dom_state[state],
+                                        "cpus": cpus,
+                                        "memory": mem/2**10,
+                                        "ip": ""}
+                if dom.isActive():
+                    try:
+                        dom_dict[dom.name()]["ip"] = dom.interfaceAddresses(ag, 0)['ens3']["addrs"][0]["addr"]
+                    except Exception as e:
+                        dom_dict[dom.name()]["ip"] = "Not available"
         self.domains = dom_dict
 
     def create_domain(self, dom_name=None, num_cpu=1, mem=1):
@@ -72,7 +81,7 @@ class VirtInstance:
         :param mem:
         :return:
         """
-        with open("domain_xmlExample.xml", "r") as f:
+        with open(os.path.dirname(os.path.abspath(__file__))+"/domain_xmlExample.xml", "r") as f:
             default_xml = f.read()
 
         default_xml = default_xml.replace("{NAME}", dom_name)
@@ -101,7 +110,7 @@ class VirtInstance:
             raise Exception("The domain cold not be started.")
         return domain
 
-    def stop_domain(self, dom_name=None, force_in_error=False, domain=None):
+    def stop_domain(self, dom_name=None, force_in_error=True, domain=None):
         """stops a domain.
 
         :param dom_name:
@@ -166,7 +175,7 @@ class VirtInstance:
         src_vol = self.default_pool.storageVolLookupByName(src_dom_name+".qcow2")
         src_info = src_vol.info()
 
-        with open("disk_xmlExample.xml", "r") as f:
+        with open(os.path.dirname(os.path.abspath(__file__))+"/disk_xmlExample.xml", "r") as f:
             default_xml = f.read()
         default_xml = default_xml.replace("{NAME}", dst_dom_name)
         default_xml = default_xml.replace("{SIZE}", str(src_info[1]))
@@ -183,13 +192,13 @@ if __name__ == '__main__':
     try:
         c = VirtInstance()
         c.create_domain("test")
-        c.start_domain("test")
-        input("RET to continue...")
-        c.stop_domain("test", True)
-        input("RET to continue...")
-        c.start_domain("test")
-        input("RET to continue...")
-        c.delete_domain("test")
+        # c.start_domain("test")
+        # input("RET to continue...")
+        # c.stop_domain("test", True)
+        # input("RET to continue...")
+        # c.start_domain("test")
+        # input("RET to continue...")
+        # c.delete_domain("test")
         c.conn.close()
     except Exception as e:
         print(e)
