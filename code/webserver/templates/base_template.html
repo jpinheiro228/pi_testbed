@@ -25,9 +25,18 @@
                 </div>
                 <ul class="nav navbar-nav"> <!--Add new pages to the menu HERE!-->
                     <li><a href="/" class="">Home</a></li>
+                    {% if (session["user_id"]) and (session["user_id"] == "admin") %}
+                        <li><a href="/list_all_vms" class="">All VMS</a></li>
+                        <li><a href="/register" class="">Register User</a></li>
+                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><p class="navbar-text">User section!</p></li>
+                    {% if session["user_id"] %}
+                        <li><p class="navbar-text">{{ session["user_id"] }}</p></li>
+                        <li><a href="/logout" class="">Logout</a></li>
+                    {% else %}
+                        <li><a href="/login" class="">Login</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </nav>

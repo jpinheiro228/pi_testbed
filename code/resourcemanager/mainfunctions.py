@@ -73,6 +73,7 @@ class VirtInstance:
                         dom_dict[dom.name()]["ip"] = "Not available"
         self.domains = dom_dict
 
+
     def create_domain(self, dom_name=None, num_cpu=1, mem=1):
         """Create a domain using the default XML and a default disk.
 

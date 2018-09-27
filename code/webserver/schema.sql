@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS vm;
+
+CREATE TABLE user (
+  username TEXT PRIMARY KEY UNIQUE NOT NULL,
+  password TEXT NOT NULL
+);
+
+CREATE TABLE vm (
+  name TEXT PRIMARY KEY,
+  owner TEXT NOT NULL,
+  FOREIGN KEY (owner) REFERENCES user (username)
+);
