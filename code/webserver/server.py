@@ -155,9 +155,10 @@ def stop_vm(vm_name):
 def delete_vm(vm_name):
     if "user_id" not in session:
         return redirect(url_for('login'))
-
+    myDB = db.get_db()
     try:
         libvirt_instance.delete_domain(dom_name=vm_name)
+        db.remove_vm(myDB, vm_name)
         flash("VM deleted successfully", category="success")
     except Exception as e:
         flash(message=str(e), category="warning")

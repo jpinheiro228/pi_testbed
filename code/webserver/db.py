@@ -66,3 +66,8 @@ def get_vms_by_user(db, owner):
     for row in vms.fetchall():
         my_vms.append(row[0])
     return my_vms
+
+
+def remove_vm(db, dom_name):
+    db.execute('DELETE FROM vm WHERE name = ?', (dom_name,))
+    db.commit()
