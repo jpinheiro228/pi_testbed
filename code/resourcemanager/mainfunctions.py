@@ -1,5 +1,8 @@
 import libvirt
 import os
+import xmltodict
+import json
+import xml.etree.ElementTree as ET
 
 LIBVIRT_URI = "qemu:///system"
 
@@ -11,6 +14,23 @@ dom_state = {0: "No State",
              5: "Shut off",
              6: "Crashed",
              7: "PM Suspended"}
+
+usrp_dict = {0: """<hostdev mode='subsystem' type='usb' managed='no'>
+            <source>
+                <vendor id='0x3923'/>
+                <product id='0x7814'/>
+                <address bus='4' device='2'/>
+            </source>
+            <address type='usb' bus='0' port='1'/>
+        </hostdev>""",
+             1: """<hostdev mode='subsystem' type='usb' managed='no'>
+            <source>
+                <vendor id='0x3923'/>
+                <product id='0x7814'/>
+                <address bus='4' device='3'/>
+            </source>
+            <address type='usb' bus='0' port='1'/>
+        </hostdev>"""}
 
 ag = libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT
 
@@ -72,7 +92,6 @@ class VirtInstance:
                     except Exception as e:
                         dom_dict[dom.name()]["ip"] = "Not available"
         self.domains = dom_dict
-
 
     def create_domain(self, dom_name=None, num_cpu=1, mem=1):
         """Create a domain using the default XML and a default disk.
@@ -186,13 +205,42 @@ class VirtInstance:
             raise Exception("Something went wrong with the volume clonning.")
         return 0
 
+    def attach_usrp(self, dom_name, usrp_num=0):
+        domain = self.conn.lookupByName(dom_name)
+        dom_xml = domain.XMLDesc()
+
+        root = ET.fromstring(dom_xml)
+        devices = root.find("devices")
+        usrp = devices.find("hostdev")
+        if usrp:
+            raise Exception("This VM already has an USRP")
+        else:
+            devices.append(ET.fromstring(usrp_dict[usrp_num]))
+            domain.undefine()
+            self.conn.defineXML(ET.tostring(root).decode())
+        return "Success"
+
+    def dettach_usrp(self, dom_name):
+        domain = self.conn.lookupByName(dom_name)
+        dom_xml = domain.XMLDesc()
+        root = ET.fromstring(dom_xml)
+        devices = root.find("devices")
+        usrp = devices.find("hostdev")
+        if usrp:
+            devices.remove(usrp)
+            domain.undefine()
+            self.conn.defineXML(ET.tostring(root).decode())
+        return "Success"
+
 
 if __name__ == '__main__':
     # This main function is for testing purposes only.
     # Will be removed once all functions are tested.
     try:
         c = VirtInstance()
-        c.create_domain("test")
+        # c.create_domain("USRP2")
+        # c.dettach_usrp("USRP2")
+        # c.attach_usrp("USRP",0)
         # c.start_domain("test")
         # input("RET to continue...")
         # c.stop_domain("test", True)

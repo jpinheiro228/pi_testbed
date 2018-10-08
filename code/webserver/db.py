@@ -68,6 +68,13 @@ def get_vms_by_user(db, owner):
     return my_vms
 
 
+def get_free_usrps(db):
+    usrps = db.execute('SELECT id FROM usrp WHERE in_use_on = -1')
+    free_usrps = []
+    for row in usrps.fetchall():
+        free_usrps.append(row[0])
+    return free_usrps
+
 def remove_vm(db, dom_name):
     db.execute('DELETE FROM vm WHERE name = ?', (dom_name,))
     db.commit()

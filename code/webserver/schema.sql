@@ -11,3 +11,9 @@ CREATE TABLE vm (
   owner TEXT NOT NULL,
   FOREIGN KEY (owner) REFERENCES user (username)
 );
+
+CREATE TABLE usrp (
+  id INT PRIMARY KEY,
+  in_use_on TEXT,
+  FOREIGN KEY (in_use_on) REFERENCES vm (name)
+);

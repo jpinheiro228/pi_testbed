@@ -17,6 +17,10 @@ if not os.path.isfile(app.config["DATABASE"]):
         myDB = db.get_db()
         myDB.execute('INSERT INTO user (username, password) VALUES (?, ?)',
                      ("admin", generate_password_hash("admin")))
+        myDB.execute('INSERT INTO usrp (id, in_use_on) VALUES (?, ?)',
+                     ("0", "-1"))
+        myDB.execute('INSERT INTO usrp (id, in_use_on) VALUES (?, ?)',
+                     ("1", "-1"))
         myDB.commit()
 
 db.init_app(app)
@@ -108,22 +112,25 @@ def list_vms():
     libvirt_instance.update_dom_dict()
     myDB = db.get_db()
     vms = db.get_vms_by_user(myDB, session["user_id"])
+    usrps = db.get_free_usrps(myDB)
     vms_dict = {}
     for vm in vms:
         vms_dict[vm] = libvirt_instance.domains[vm]
-    return render_template("list_vms.html", vm_dict=vms_dict)
+    return render_template("list_vms.html", vm_dict=vms_dict, usrp_list=usrps)
 
 
 @app.route("/list_all_vms")
 def list_all_vms():
     if ("user_id" not in session) or (session["user_id"] != "admin"):
         return redirect(url_for('list_vms'))
-
+    myDB = db.get_db()
+    usrps = db.get_free_usrps(myDB)
+    print(usrps)
     libvirt_instance.update_dom_dict()
-    return render_template("list_vms.html", vm_dict=libvirt_instance.domains)
+    return render_template("list_vms.html", vm_dict=libvirt_instance.domains, usrp_list=usrps)
 
 
-@app.route("/start/<vm_name>")
+@app.route("/start/<vm_name>", methods=["POST"])
 def start_vm(vm_name):
     if "user_id" not in session:
         return redirect(url_for('login'))

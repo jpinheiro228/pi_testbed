@@ -21,7 +21,7 @@
             <td>{{ vm_dict[vm]["ip"] }}</td>
             <td style="text-align: center">
                 {%  if vm_dict[vm]["status"] == "Shut off" %}
-                    <a href="/start/{{ vm_dict[vm]["name"] }}"><button class="btn btn-primary">Start VM</button></a>
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#start_{{ vm_dict[vm]["name"] }}">Launch VM</button>
                 {%  elif vm_dict[vm]["status"] == "Running" %}
                     <a href="/stop/{{ vm_dict[vm]["name"] }}"><button class="btn btn-warning">Stop VM</button></a>
                     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#access_{{ vm_dict[vm]["name"] }}">Access VM</button>
@@ -38,10 +38,8 @@
                     </div>
                     <div class="modal-body">
                         <p>To access your VM, use the following command on a terminal window:</p>
-                        <code>ssh -X -o ProxyCommand='ssh -W %h:%p hop@192.168.200.220' ubuntu@{{ 
-vm_dict[vm]["ip"] }}</code>
-                        <p>The first password you will be asket is the one for the hop server. The password is 
-<code>aicthop</code>. The second one is for your VM. The password is <code>ubuntu</code></p>
+                        <code>ssh -X -o ProxyCommand='ssh -W %h:%p hop@192.168.200.220' ubuntu@{{ vm_dict[vm]["ip"] }}</code>
+                        <p>The first password you will be asket is the one for the hop server. The password is <code>aicthop</code>. The second one is for your VM. The password is <code>ubuntu</code></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -49,7 +47,27 @@ vm_dict[vm]["ip"] }}</code>
                 </div>
             </div>
         </div>
+        <div id="start_{{ vm_dict[vm]["name"] }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">USRP for "{{ vm_dict[vm]["name"] }}"</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-signin" method="post" enctype=multipart/form-data action="/start/{{ vm_dict[vm]["name"] }}">
+                            <div class="form-group">
+                                {% for usrp in usrp_list %}
+                                    <input type="radio" name="usrp" value="{{ usrp }}"> USRP {{ usrp }}<br>
+                                {% endfor %}
+                                <input type="radio" name="usrp" value="-1"> No USRP<br>
+                            </div>
+                            <button class="btn btn-lg btn-primary btn-block" type="submit">Launch VM</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endfor %}
     </table>
-
 {% endblock %}
