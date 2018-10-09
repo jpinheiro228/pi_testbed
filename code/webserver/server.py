@@ -2,12 +2,17 @@ from flask import Flask, render_template, redirect, url_for, request, flash, ses
 from resourcemanager.mainfunctions import VirtInstance
 import db
 import os
+import shutil
 from time import sleep
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
+from paramiko import SSHClient, AutoAddPolicy
+from scp import SCPClient
 
 
 app = Flask(__name__)
 app.secret_key = os.urandom(16)
+app.config['UPLOAD_FOLDER'] = os.path.dirname(os.path.abspath(__file__))+"/uploads"
 app.config["DATABASE"] = os.path.dirname(os.path.abspath(__file__))+"/flask.sql"
 libvirt_instance = VirtInstance()
 
@@ -24,6 +29,13 @@ if not os.path.isfile(app.config["DATABASE"]):
         myDB.commit()
 
 db.init_app(app)
+
+ALLOWED_EXTENSIONS = set(['grc', 'wav', 'py'])
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route("/")
@@ -152,6 +164,44 @@ def start_vm(vm_name):
         return 401
 
 
+@app.route("/upload/<vm_name>", methods=["POST"])
+def upload_to_vm(vm_name):
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part', category="warning")
+            return redirect(request.url)
+
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file', category="warning")
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            if not os.path.isdir(app.config['UPLOAD_FOLDER']+'/'+vm_name):
+                os.mkdir(app.config['UPLOAD_FOLDER']+'/'+vm_name)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER']+'/'+vm_name, filename))
+
+            ssh = SSHClient()
+            ssh.set_missing_host_key_policy(AutoAddPolicy)
+            ssh.load_system_host_keys()
+            ssh.connect(hostname=libvirt_instance.domains[vm_name]["ip"], username='ubuntu', password='ubuntu')
+            scp = SCPClient(ssh.get_transport())
+            scp.put(app.config['UPLOAD_FOLDER']+'/'+vm_name+'/'+filename, '~/'+filename)
+            scp.close()
+            ssh.close()
+
+            flash('Upload Successful', category="success")
+            return redirect(request.referrer)
+
+        return redirect(request.referrer)
+    else:
+        return 401
+
+
 @app.route("/stop/<vm_name>")
 def stop_vm(vm_name):
     if "user_id" not in session:
@@ -177,6 +227,9 @@ def delete_vm(vm_name):
     try:
         libvirt_instance.delete_domain(dom_name=vm_name)
         db.remove_vm(myDB, vm_name)
+        db.unset_usrp(myDB, vm_name)
+        if os.path.isdir(app.config['UPLOAD_FOLDER']+"/"+vm_name):
+            shutil.rmtree(app.config['UPLOAD_FOLDER']+"/"+vm_name)
         flash("VM deleted successfully", category="success")
     except Exception as e:
         flash(message=str(e), category="warning")

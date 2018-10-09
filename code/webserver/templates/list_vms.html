@@ -25,6 +25,7 @@
                 {%  elif vm_dict[vm]["status"] == "Running" %}
                     <a href="/stop/{{ vm_dict[vm]["name"] }}"><button class="btn btn-warning">Stop VM</button></a>
                     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#access_{{ vm_dict[vm]["name"] }}">Access VM</button>
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#upload_{{ vm_dict[vm]["name"] }}">Upload File</button>
                 {% endif %}
                     <a href="/delete/{{ vm_dict[vm]["name"] }}"><button class="btn btn-danger">Delete VM</button></a>
             </td>
@@ -63,6 +64,24 @@
                                 <input type="radio" name="usrp" value="-1" checked="checked"> No USRP<br>
                             </div>
                             <button class="btn btn-lg btn-primary btn-block" type="submit">Launch VM</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="upload_{{ vm_dict[vm]["name"] }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Upload file to "{{ vm_dict[vm]["name"] }}"</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-signin" method="post" enctype=multipart/form-data action="/upload/{{ vm_dict[vm]["name"] }}">
+                            <div class="form-group">
+                                <input type="file" name="file"><br>
+                                <button class="btn btn-lg btn-primary btn-block" type="submit">Upload</button>
+                            </div>
                         </form>
                     </div>
                 </div>

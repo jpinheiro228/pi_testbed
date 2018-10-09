@@ -1,2 +1,4 @@
 flask
 libvirt-python
+paramiko
+scp
