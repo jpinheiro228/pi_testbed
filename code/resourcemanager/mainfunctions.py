@@ -239,7 +239,7 @@ if __name__ == '__main__':
     try:
         c = VirtInstance()
         # c.create_domain("USRP2")
-        # c.dettach_usrp("USRP2")
+        c.dettach_usrp("USRP")
         # c.attach_usrp("USRP",0)
         # c.start_domain("test")
         # input("RET to continue...")

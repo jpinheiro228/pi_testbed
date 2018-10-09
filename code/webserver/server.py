@@ -125,7 +125,6 @@ def list_all_vms():
         return redirect(url_for('list_vms'))
     myDB = db.get_db()
     usrps = db.get_free_usrps(myDB)
-    print(usrps)
     libvirt_instance.update_dom_dict()
     return render_template("list_vms.html", vm_dict=libvirt_instance.domains, usrp_list=usrps)
 
@@ -135,13 +134,22 @@ def start_vm(vm_name):
     if "user_id" not in session:
         return redirect(url_for('login'))
 
-    try:
-        libvirt_instance.start_domain(dom_name=vm_name)
-        flash("VM started successfully", category="success")
-    except Exception as e:
-        flash(message=str(e), category="warning")
-    sleep(2)
-    return redirect(request.referrer)
+    if request.method == 'POST':
+        usrp = int(request.form['usrp'])
+        myDB = db.get_db()
+        if usrp in db.get_free_usrps(myDB):
+            db.set_usrp(myDB, vm_name, usrp)
+            libvirt_instance.attach_usrp(vm_name, usrp_num=usrp)
+
+        try:
+            libvirt_instance.start_domain(dom_name=vm_name)
+            flash("VM started successfully", category="success")
+        except Exception as e:
+            flash(message=str(e), category="warning")
+        sleep(2)
+        return redirect(request.referrer)
+    else:
+        return 401
 
 
 @app.route("/stop/<vm_name>")
@@ -151,6 +159,9 @@ def stop_vm(vm_name):
 
     try:
         libvirt_instance.stop_domain(dom_name=vm_name)
+        myDB = db.get_db()
+        db.unset_usrp(myDB, vm_name)
+        libvirt_instance.dettach_usrp(vm_name)
         flash("VM stopped successfully", category="success")
     except Exception as e:
         flash(message=str(e), category="warning")
