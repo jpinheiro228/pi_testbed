@@ -19,8 +19,8 @@
             <source file='/var/lib/libvirt/images/{NAME}.qcow2'/>
             <target dev='hda' bus='ide'/>
         </disk>
-        <interface type='network'>
-            <source network='default'/>
+	    <interface type='bridge'>
+            <source bridge='br0'/>
         </interface>
         <controller type='usb' index='0' model='qemu-xhci'>
             <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x2'/>
