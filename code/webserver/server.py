@@ -39,7 +39,7 @@ def allowed_file(filename):
 
 
 @app.route("/")
-def hello_world():
+def index():
     if "user_id" not in session:
         return redirect(url_for('login'))
 
@@ -49,7 +49,7 @@ def hello_world():
 @app.route("/login", methods=('GET', 'POST'))
 def login():
     if "user_id" in session:
-        return redirect(url_for('hello_world'))
+        return redirect(url_for('index'))
 
     if request.method == 'POST':
         username = request.form['username']
@@ -76,7 +76,7 @@ def login():
     return render_template('login.html')
 
 
-@app.route("/logout")
+@app.route("/logout", methods=['GET'])
 def logout():
     if "user_id" not in session:
         return redirect(url_for('login'))
@@ -87,6 +87,8 @@ def logout():
 
 @app.route('/register', methods=('GET', 'POST'))
 def register():
+    if ("user_id" not in session) or (session["user_id"] != "admin"):
+        return redirect(url_for('index'))
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -109,11 +111,75 @@ def register():
                 (username, generate_password_hash(password))
             )
             myDB.commit()
-            return redirect(url_for('hello_world'))
+            return redirect(url_for('index'))
 
         flash(error, "error")
 
     return render_template('register.html')
+
+
+@app.route('/list_user', methods=['GET'])
+def list_user():
+    if ("user_id" not in session) or (session["user_id"] != "admin"):
+        return redirect(url_for('index'))
+    myDB = db.get_db()
+
+    error = None
+
+    user_list = myDB.execute('SELECT username FROM user')
+
+    if user_list is None:
+        error = 'No users registered.'
+        flash(error, "error")
+
+    return render_template('list_users.html', user_list=user_list)
+
+
+@app.route('/delete_user/<username>', methods=['GET'])
+def delete_user(username):
+    if ("user_id" not in session) or (session["user_id"] != "admin"):
+        return redirect(url_for('index'))
+    myDB = db.get_db()
+
+    error = None
+
+    deleted_user = myDB.execute('DELETE FROM user WHERE username = ?', (username,))
+    myDB.commit()
+
+    if deleted_user is None:
+        error = 'Something went wrong.'
+        flash(error, "error")
+
+    flash("Success!", "success")
+
+    return redirect(request.referrer)
+
+
+@app.route('/edit_user/<username>', methods=['GET', 'POST'])
+def edit_user(username):
+    if ("user_id" not in session) or (session["user_id"] != "admin"):
+        return redirect(url_for('index'))
+
+    if request.method == 'GET':
+        pass
+    elif request.method == 'POST':
+        myDB = db.get_db()
+
+        newpass = request.form.get("newpass")
+
+        error = None
+
+        updated_user = myDB.execute('UPDATE user SET password = ? WHERE username = ?', (generate_password_hash(newpass), username,))
+        myDB.commit()
+
+        if updated_user is None:
+            error = 'Something went wrong.'
+            flash(error, "error")
+
+        flash("Success!", "success")
+        return redirect(url_for("list_user"))
+
+    return render_template("edit_user.html", username=username)
 
 
 @app.route("/list_vms")
@@ -258,6 +324,9 @@ def create_vm():
         return redirect(url_for("list_vms"))
     else:
         return 405
+
+
+# TODO: Add function to detach USRP from VM
 
 
 if __name__ == '__main__':
