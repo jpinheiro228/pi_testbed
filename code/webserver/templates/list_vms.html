@@ -22,7 +22,9 @@
             <td style="text-align: center">
                 {%  if vm_dict[vm]["status"] == "Shut off" %}
                     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#start_{{ vm_dict[vm]["name"] }}">Launch VM</button>
-                    <a href="/detach/{{ vm_dict[vm]["name"] }}"><button class="btn btn-success">Detach USRP</button></a>
+                    {%  if vm_dict[vm]["usrp"] == True %}
+                        <a href="/detach/{{ vm_dict[vm]["name"] }}"><button class="btn btn-success">Detach USRP</button></a>
+                    {% endif %}
                 {%  elif vm_dict[vm]["status"] == "Running" %}
                     <a href="/stop/{{ vm_dict[vm]["name"] }}"><button class="btn btn-warning">Stop VM</button></a>
                     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#access_{{ vm_dict[vm]["name"] }}">Access VM</button>

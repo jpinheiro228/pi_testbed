@@ -89,3 +89,18 @@ def set_usrp(db, vm_name, id):
 def unset_usrp(db, vm_name):
     db.execute('UPDATE usrp SET in_use_on = ? WHERE in_use_on = ?', (-1, vm_name))
     db.commit()
+
+
+def check_usrp(db, detected):
+    usrps = db.execute('SELECT * FROM usrp')
+    reg_usrp = len(usrps.fetchall())
+    while reg_usrp != detected:
+        if reg_usrp > detected:
+            db.execute('DELETE FROM usrp WHERE id = (SELECT MAX(id) FROM usrp)')
+            db.commit()
+            reg_usrp -= 1
+        elif reg_usrp < detected:
+            db.execute('INSERT INTO usrp (id, in_use_on) VALUES (?, ?)',
+                       (reg_usrp, -1))
+            db.commit()
+            reg_usrp += 1

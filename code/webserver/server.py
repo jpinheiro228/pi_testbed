@@ -22,15 +22,16 @@ if not os.path.isfile(app.config["DATABASE"]):
         myDB = db.get_db()
         myDB.execute('INSERT INTO user (username, password) VALUES (?, ?)',
                      ("admin", generate_password_hash("admin")))
-        myDB.execute('INSERT INTO usrp (id, in_use_on) VALUES (?, ?)',
-                     ("0", "-1"))
-        myDB.execute('INSERT INTO usrp (id, in_use_on) VALUES (?, ?)',
-                     ("1", "-1"))
         myDB.commit()
+
 
 db.init_app(app)
 
 ALLOWED_EXTENSIONS = set(['grc', 'wav', 'py'])
+
+with app.app_context():
+    myDB = db.get_db()
+    db.check_usrp(myDB, libvirt_instance.n_usrp())
 
 
 def allowed_file(filename):
@@ -186,11 +187,11 @@ def edit_user(username):
 def list_vms():
     if "user_id" not in session:
         return redirect(url_for('login'))
-
     libvirt_instance.update_dom_dict()
     myDB = db.get_db()
     vms = db.get_vms_by_user(myDB, session["user_id"])
     usrps = db.get_free_usrps(myDB)
+
     vms_dict = {}
     for vm in vms:
         vms_dict[vm] = libvirt_instance.domains[vm]
@@ -340,9 +341,6 @@ def create_vm():
         return redirect(url_for("list_vms"))
     else:
         return 405
-
-
-# TODO: Add function to detach USRP from VM
 
 
 if __name__ == '__main__':

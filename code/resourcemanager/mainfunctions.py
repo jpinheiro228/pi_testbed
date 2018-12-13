@@ -16,15 +16,17 @@ dom_state = {0: "No State",
              7: "PM Suspended"}
 
 with open('usrps.txt', 'r') as f:
-    usrplist = f.read().replace("'''", '"""').split(",")
+    usrplist = f.read().replace("'''", '"""').split(",")[0:-1]
 
 num = 0
 usrp_dict = {}
-for i in usrplist[0:-1]:
+for i in usrplist:
     usrp_dict[num] = i
     num += 1
-print(usrp_dict)
+print("{} USRPs where detected.".format(len(usrp_dict)))
+
 ag = libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT
+
 
 class VirtInstance:
     def __init__(self, uri=LIBVIRT_URI):
@@ -77,7 +79,8 @@ class VirtInstance:
                                         "status": dom_state[state],
                                         "cpus": cpus,
                                         "memory": mem/2**10,
-                                        "ip": ""}
+                                        "ip": "",
+                                        "usrp": self.has_usrp(dom.name())}
                 if dom.isActive():
                     try:
                         dom_dict[dom.name()]["ip"] = dom.interfaceAddresses(ag, 0)['ens3']["addrs"][0]["addr"]
@@ -224,6 +227,19 @@ class VirtInstance:
             self.conn.defineXML(ET.tostring(root).decode())
         return "Success"
 
+    def has_usrp(self, dom_name):
+        domain = self.conn.lookupByName(dom_name)
+        dom_xml = domain.XMLDesc()
+        root = ET.fromstring(dom_xml)
+        devices = root.find("devices")
+        usrp = devices.find("hostdev")
+        if usrp:
+            return True
+        else:
+            return False
+
+    def n_usrp(self):
+        return len(usrp_dict)
 
 if __name__ == '__main__':
     # This main function is for testing purposes only.
