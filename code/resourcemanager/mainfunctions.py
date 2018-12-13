@@ -15,23 +15,15 @@ dom_state = {0: "No State",
              6: "Crashed",
              7: "PM Suspended"}
 
-usrp_dict = {0: """<hostdev mode='subsystem' type='usb' managed='no'>
-            <source>
-                <vendor id='0x3923'/>
-                <product id='0x7814'/>
-                <address bus='4' device='2'/>
-            </source>
-            <address type='usb' bus='0' port='1'/>
-        </hostdev>""",
-             1: """<hostdev mode='subsystem' type='usb' managed='no'>
-            <source>
-                <vendor id='0x3923'/>
-                <product id='0x7814'/>
-                <address bus='4' device='3'/>
-            </source>
-            <address type='usb' bus='0' port='1'/>
-        </hostdev>"""}
+with open('usrps.txt', 'r') as f:
+    usrplist = f.read().replace("'''", '"""').split(",")
 
+num = 0
+usrp_dict = {}
+for i in usrplist[0:-1]:
+    usrp_dict[num] = i
+    num += 1
+print(usrp_dict)
 ag = libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT
 
 class VirtInstance:
@@ -220,7 +212,7 @@ class VirtInstance:
             self.conn.defineXML(ET.tostring(root).decode())
         return "Success"
 
-    def dettach_usrp(self, dom_name):
+    def detach_usrp(self, dom_name):
         domain = self.conn.lookupByName(dom_name)
         dom_xml = domain.XMLDesc()
         root = ET.fromstring(dom_xml)
@@ -239,7 +231,7 @@ if __name__ == '__main__':
     try:
         c = VirtInstance()
         # c.create_domain("USRP2")
-        c.dettach_usrp("USRP")
+        c.detach_usrp("USRP")
         # c.attach_usrp("USRP",0)
         # c.start_domain("test")
         # input("RET to continue...")

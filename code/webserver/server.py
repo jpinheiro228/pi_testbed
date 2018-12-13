@@ -277,8 +277,24 @@ def stop_vm(vm_name):
         libvirt_instance.stop_domain(dom_name=vm_name)
         myDB = db.get_db()
         db.unset_usrp(myDB, vm_name)
-        libvirt_instance.dettach_usrp(vm_name)
+        libvirt_instance.detach_usrp(vm_name)
         flash("VM stopped successfully", category="success")
+    except Exception as e:
+        flash(message=str(e), category="warning")
+    sleep(2)
+    return redirect(request.referrer)
+
+
+@app.route("/detach/<vm_name>")
+def detach(vm_name):
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+
+    try:
+        myDB = db.get_db()
+        db.unset_usrp(myDB, vm_name)
+        libvirt_instance.detach_usrp(vm_name)
+        flash("USRP detached successfully", category="success")
     except Exception as e:
         flash(message=str(e), category="warning")
     sleep(2)
