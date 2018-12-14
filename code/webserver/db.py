@@ -104,3 +104,37 @@ def check_usrp(db, detected):
                        (reg_usrp, -1))
             db.commit()
             reg_usrp += 1
+
+# PI!
+
+def get_free_pi(db):
+    usrps = db.execute('SELECT id FROM pi WHERE in_use_on = -1')
+    free_usrps = []
+    for row in usrps.fetchall():
+        free_usrps.append(row[0])
+    return free_usrps
+
+
+def set_pi(db, user, id):
+    db.execute('UPDATE pi SET in_use_on = ? WHERE id = ?', (user, id))
+    db.commit()
+
+
+def unset_pi(db, user):
+    db.execute('UPDATE pi SET in_use_on = ? WHERE in_use_on = ?', (-1, user))
+    db.commit()
+
+
+def check_pi(db, detected):
+    usrps = db.execute('SELECT * FROM usrp')
+    reg_usrp = len(usrps.fetchall())
+    while reg_usrp != detected:
+        if reg_usrp > detected:
+            db.execute('DELETE FROM usrp WHERE id = (SELECT MAX(id) FROM usrp)')
+            db.commit()
+            reg_usrp -= 1
+        elif reg_usrp < detected:
+            db.execute('INSERT INTO usrp (id, in_use_on) VALUES (?, ?)',
+                       (reg_usrp, -1))
+            db.commit()
+            reg_usrp += 1
