@@ -7,4 +7,4 @@ The FM-RXpi.grc file to be runned at the receiver (Raspberry PI + RTL-SDR)
 implements an WBFM receiver.
 
 The FM-TX.grc file to be runned at the transmitter (VM + USRP) implements the
-fM transmitter. A wav file must be loaded at the flowgraph.
+FM transmitter. A wav file must be loaded at the flowgraph.
