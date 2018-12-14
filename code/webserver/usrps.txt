@@ -1,0 +1,16 @@
+<hostdev mode='subsystem' type='usb' managed='no'>
+    <source>
+        <vendor id='0x3923'/>
+        <product id='0x7814'/>
+        <address bus='003' device='004'/>
+    </source>
+    <address type='usb' bus='0' port='1'/>
+</hostdev>,
+<hostdev mode='subsystem' type='usb' managed='no'>
+    <source>
+        <vendor id='0x3923'/>
+        <product id='0x7814'/>
+        <address bus='003' device='003'/>
+    </source>
+    <address type='usb' bus='0' port='1'/>
+</hostdev>,
