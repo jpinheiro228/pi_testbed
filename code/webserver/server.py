@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from resourcemanager.mainfunctions import VirtInstance
+import resourcemanager.pi_simple as pi_func
 import db
 import os
 import shutil
@@ -32,6 +33,7 @@ ALLOWED_EXTENSIONS = set(['grc', 'wav', 'py'])
 with app.app_context():
     myDB = db.get_db()
     db.check_usrp(myDB, libvirt_instance.n_usrp())
+    db.check_pi(myDB)
 
 
 def allowed_file(filename):
@@ -190,12 +192,22 @@ def list_vms():
     libvirt_instance.update_dom_dict()
     myDB = db.get_db()
     vms = db.get_vms_by_user(myDB, session["user_id"])
+    free_pi = db.get_free_pi(myDB)
+    my_pi = db.get_user_pi(myDB, session["user_id"])
     usrps = db.get_free_usrps(myDB)
 
     vms_dict = {}
     for vm in vms:
         vms_dict[vm] = libvirt_instance.domains[vm]
-    return render_template("list_vms.html", vm_dict=vms_dict, usrp_list=usrps)
+    my_pi_dict = {}
+    for pi in my_pi:
+        my_pi_dict[pi] = pi_func.PI[pi]
+    free_pi_dict = {}
+    for pi in free_pi:
+        free_pi_dict[pi] = pi_func.PI[pi]
+
+    return render_template("list_vms.html", vm_dict=vms_dict, usrp_list=usrps, free_pi_dict=free_pi_dict,
+                           my_pi=my_pi_dict)
 
 
 @app.route("/list_all_vms")
@@ -342,6 +354,83 @@ def create_vm():
     else:
         return 405
 
+
+@app.route("/allocate_pi", methods=['POST'])
+def allocate_pi():
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+
+    myDB = db.get_db()
+    if request.method == "POST":
+        try:
+            pi = request.form['pi']
+            db.set_pi(myDB, session["user_id"], pi)
+            pi_func.add_pi_user(pi, session["user_id"])
+        except Exception as e:
+            flash(str(e), "error")
+            return redirect(request.referrer)
+
+        flash("Done!", "success")
+        return redirect(request.referrer)
+    else:
+        return 405
+
+
+@app.route("/deallocate/<pi>", methods=['GET'])
+def deallocate_pi(pi):
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+
+    myDB = db.get_db()
+    if request.method == "GET":
+        try:
+            db.unset_pi(myDB, session["user_id"], pi)
+        except Exception as e:
+            flash(str(e), "error")
+            return redirect(request.referrer)
+        flash("Done!", "success")
+        return redirect(request.referrer)
+    else:
+        return 405
+
+
+@app.route("/upload_pi/<pi>", methods=["POST"])
+def upload_to_pi(pi):
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part', category="warning")
+            return redirect(request.url)
+
+        pi_name = pi_func.PI[pi]["hostname"]
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file', category="warning")
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            if not os.path.isdir(app.config['UPLOAD_FOLDER']+'/'+pi_name):
+                os.mkdir(app.config['UPLOAD_FOLDER']+'/'+pi_name)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER']+'/'+pi_name, filename))
+
+            ssh = SSHClient()
+            ssh.set_missing_host_key_policy(AutoAddPolicy)
+            ssh.load_system_host_keys()
+            ssh.connect(hostname=pi_func.PI[pi]["ip"], username=session["user_id"], password=session["user_id"])
+            scp = SCPClient(ssh.get_transport())
+            scp.put(app.config['UPLOAD_FOLDER']+'/'+pi_name+'/'+filename, '~/'+filename)
+            scp.close()
+            ssh.close()
+
+            flash('Upload Successful', category="success")
+            return redirect(request.referrer)
+
+        return redirect(request.referrer)
+    else:
+        return 401
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)

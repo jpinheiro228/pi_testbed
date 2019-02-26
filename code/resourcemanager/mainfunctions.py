@@ -78,7 +78,7 @@ class VirtInstance:
                                         "name": dom.name(),
                                         "status": dom_state[state],
                                         "cpus": cpus,
-                                        "memory": mem/2**10,
+                                        "memory": mem / 2 ** 10,
                                         "ip": "",
                                         "usrp": self.has_usrp(dom.name())}
                 if dom.isActive():
@@ -96,7 +96,7 @@ class VirtInstance:
         :param mem:
         :return:
         """
-        with open(os.path.dirname(os.path.abspath(__file__))+"/domain_xmlExample.xml", "r") as f:
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/domain_xmlExample.xml", "r") as f:
             default_xml = f.read()
 
         default_xml = default_xml.replace("{NAME}", dom_name)
@@ -182,15 +182,15 @@ class VirtInstance:
         """
         disk_list = self.list_disks()
 
-        if dst_dom_name+".qcow2" in disk_list:
+        if dst_dom_name + ".qcow2" in disk_list:
             raise Exception("Destination disk {} already exists.".format(dst_dom_name))
-        elif src_dom_name+".qcow2" not in disk_list:
+        elif src_dom_name + ".qcow2" not in disk_list:
             raise Exception("Source disk {} does not exist.".format(src_dom_name))
 
-        src_vol = self.default_pool.storageVolLookupByName(src_dom_name+".qcow2")
+        src_vol = self.default_pool.storageVolLookupByName(src_dom_name + ".qcow2")
         src_info = src_vol.info()
 
-        with open(os.path.dirname(os.path.abspath(__file__))+"/disk_xmlExample.xml", "r") as f:
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/disk_xmlExample.xml", "r") as f:
             default_xml = f.read()
         default_xml = default_xml.replace("{NAME}", dst_dom_name)
         default_xml = default_xml.replace("{SIZE}", str(src_info[1]))
@@ -240,6 +240,7 @@ class VirtInstance:
 
     def n_usrp(self):
         return len(usrp_dict)
+
 
 if __name__ == '__main__':
     # This main function is for testing purposes only.

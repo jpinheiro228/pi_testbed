@@ -20,6 +20,6 @@ CREATE TABLE usrp (
 
 CREATE TABLE pi (
   id INT PRIMARY KEY,
-  in_use TEXT,
+  in_use_on TEXT,
   FOREIGN KEY (in_use_on) REFERENCES user (username)
 );
