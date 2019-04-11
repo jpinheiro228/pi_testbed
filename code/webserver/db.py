@@ -89,3 +89,61 @@ def set_usrp(db, vm_name, id):
 def unset_usrp(db, vm_name):
     db.execute('UPDATE usrp SET in_use_on = ? WHERE in_use_on = ?', (-1, vm_name))
     db.commit()
+
+
+def check_usrp(db, detected):
+    usrps = db.execute('SELECT * FROM usrp')
+    reg_usrp = len(usrps.fetchall())
+    while reg_usrp != detected:
+        if reg_usrp > detected:
+            db.execute('DELETE FROM usrp WHERE id = (SELECT MAX(id) FROM usrp)')
+            db.commit()
+            reg_usrp -= 1
+        elif reg_usrp < detected:
+            db.execute('INSERT INTO usrp (id, in_use_on) VALUES (?, ?)',
+                       (reg_usrp, -1))
+            db.commit()
+            reg_usrp += 1
+
+# PI!
+
+
+def get_free_pi(db):
+    usrps = db.execute('SELECT id FROM pi WHERE in_use_on = -1')
+    free_usrps = []
+    for row in usrps.fetchall():
+        free_usrps.append(row[0])
+    return free_usrps
+
+
+def get_user_pi(db, user):
+    pis = db.execute('SELECT id FROM pi WHERE in_use_on = ?', (user,))
+    my_pis = []
+    for row in pis.fetchall():
+        my_pis.append(row[0])
+    return my_pis
+
+
+def set_pi(db, user, id):
+    db.execute('UPDATE pi SET in_use_on = ? WHERE id = ?', (user, id))
+    db.commit()
+
+
+def unset_pi(db, user, pi):
+    db.execute('UPDATE pi SET in_use_on = ? WHERE ( id = ?)', (-1, pi))
+    db.commit()
+
+
+def check_pi(db):
+    pis = db.execute('SELECT * FROM pi')
+    reg_pis = len(pis.fetchall())
+    while reg_pis != 2:
+        if reg_pis > 2:
+            db.execute('DELETE FROM pi WHERE id = (SELECT MAX(id) FROM pi)')
+            db.commit()
+            reg_pis -= 1
+        elif reg_pis < 2:
+            db.execute('INSERT INTO pi (id, in_use_on) VALUES (?, ?)',
+                       (reg_pis, -1))
+            db.commit()
+            reg_pis += 1

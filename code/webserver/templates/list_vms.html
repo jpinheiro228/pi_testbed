@@ -22,7 +22,9 @@
             <td style="text-align: center">
                 {%  if vm_dict[vm]["status"] == "Shut off" %}
                     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#start_{{ vm_dict[vm]["name"] }}">Launch VM</button>
-                    <a href="/detach/{{ vm_dict[vm]["name"] }}"><button class="btn btn-success">Detach USRP</button></a>
+                    {%  if vm_dict[vm]["usrp"] == True %}
+                        <a href="/detach/{{ vm_dict[vm]["name"] }}"><button class="btn btn-success">Detach USRP</button></a>
+                    {% endif %}
                 {%  elif vm_dict[vm]["status"] == "Running" %}
                     <a href="/stop/{{ vm_dict[vm]["name"] }}"><button class="btn btn-warning">Stop VM</button></a>
                     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#access_{{ vm_dict[vm]["name"] }}">Access VM</button>
@@ -89,5 +91,94 @@
             </div>
         </div>
         {% endfor %}
+{#    RASPBERRY PI TABLE    #}
+        <tr>
+            <td colspan="6"></td>
+        </tr>
+        <tr>
+            <td colspan="6"></td>
+        </tr>
+        <tr>
+            <td colspan="6">Raspberry Pi</td>
+        </tr>
+        <tr>
+            <td colspan="4">Name</td>
+            <td>IP</td>
+            <td style="text-align: right">
+                <button type="button" class="btn btn-success btn-xs" data-toggle="modal" data-target="#new_pi">New</button>
+            </td>
+        </tr>
+        {% for pi in my_pi %}
+            <tr>
+                <td colspan="4">Raspberry Pi {{ my_pi[pi]["hostname"] }}</td>
+                <td>{{ my_pi[pi]["ip"]  }}</td>
+                <td>
+                    <a href="/deallocate/{{ pi }}"><button class="btn btn-success">Deallocate PI</button></a>
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#access_pi_{{ pi }}">Access PI</button>
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#upload_pi_{{ pi }}">Upload File</button>
+                </td>
+            </tr>
+            <div id="access_pi_{{ pi }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Access PI "access_pi_{{ pi }}"</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>To access your VM, use the following command on a terminal window:</p>
+                        <code>ssh -X -o ProxyCommand='ssh -W %h:%p hop@192.168.200.220' {{ session["user_id"] }}@{{ my_pi[pi]["ip"] }}</code>
+                        <p>The first password you will be asket is the one for the hop server. The password is <code>aicthop</code>. The second one is for your VM. The password is <code>{{ session["user_id"] }}</code></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <div id="upload_pi_{{ pi }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Upload file to Pi {{ pi }}}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-signin" method="post" enctype=multipart/form-data action="/upload_pi/{{ pi }}">
+                            <div class="form-group">
+                                <input type="file" name="file"><br>
+                                <button class="btn btn-lg btn-primary btn-block" type="submit">Upload</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+        <div id="new_pi" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Allocate Pi</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-signin" method="post" enctype=multipart/form-data action="/allocate_pi">
+                            <div class="form-group">
+                                {% for pi in free_pi_dict %}
+                                    <input type="radio" name="pi" value="{{ pi }}"> PI {{ pi }}<br>
+                                {% endfor %}
+                            </div>
+                            <button class="btn btn-lg btn-primary btn-block" type="submit">Allocate RaspberryPi</button>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </table>
 {% endblock %}

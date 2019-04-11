@@ -16,15 +16,17 @@ dom_state = {0: "No State",
              7: "PM Suspended"}
 
 with open('usrps.txt', 'r') as f:
-    usrplist = f.read().replace("'''", '"""').split(",")
+    usrplist = f.read().replace("'''", '"""').split(",")[0:-1]
 
 num = 0
 usrp_dict = {}
-for i in usrplist[0:-1]:
+for i in usrplist:
     usrp_dict[num] = i
     num += 1
-print(usrp_dict)
+print("{} USRPs where detected.".format(len(usrp_dict)))
+
 ag = libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT
+
 
 class VirtInstance:
     def __init__(self, uri=LIBVIRT_URI):
@@ -76,8 +78,9 @@ class VirtInstance:
                                         "name": dom.name(),
                                         "status": dom_state[state],
                                         "cpus": cpus,
-                                        "memory": mem/2**10,
-                                        "ip": ""}
+                                        "memory": mem / 2 ** 10,
+                                        "ip": "",
+                                        "usrp": self.has_usrp(dom.name())}
                 if dom.isActive():
                     try:
                         dom_dict[dom.name()]["ip"] = dom.interfaceAddresses(ag, 0)['ens3']["addrs"][0]["addr"]
@@ -93,7 +96,7 @@ class VirtInstance:
         :param mem:
         :return:
         """
-        with open(os.path.dirname(os.path.abspath(__file__))+"/domain_xmlExample.xml", "r") as f:
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/domain_xmlExample.xml", "r") as f:
             default_xml = f.read()
 
         default_xml = default_xml.replace("{NAME}", dom_name)
@@ -179,15 +182,15 @@ class VirtInstance:
         """
         disk_list = self.list_disks()
 
-        if dst_dom_name+".qcow2" in disk_list:
+        if dst_dom_name + ".qcow2" in disk_list:
             raise Exception("Destination disk {} already exists.".format(dst_dom_name))
-        elif src_dom_name+".qcow2" not in disk_list:
+        elif src_dom_name + ".qcow2" not in disk_list:
             raise Exception("Source disk {} does not exist.".format(src_dom_name))
 
-        src_vol = self.default_pool.storageVolLookupByName(src_dom_name+".qcow2")
+        src_vol = self.default_pool.storageVolLookupByName(src_dom_name + ".qcow2")
         src_info = src_vol.info()
 
-        with open(os.path.dirname(os.path.abspath(__file__))+"/disk_xmlExample.xml", "r") as f:
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/disk_xmlExample.xml", "r") as f:
             default_xml = f.read()
         default_xml = default_xml.replace("{NAME}", dst_dom_name)
         default_xml = default_xml.replace("{SIZE}", str(src_info[1]))
@@ -223,6 +226,20 @@ class VirtInstance:
             domain.undefine()
             self.conn.defineXML(ET.tostring(root).decode())
         return "Success"
+
+    def has_usrp(self, dom_name):
+        domain = self.conn.lookupByName(dom_name)
+        dom_xml = domain.XMLDesc()
+        root = ET.fromstring(dom_xml)
+        devices = root.find("devices")
+        usrp = devices.find("hostdev")
+        if usrp:
+            return True
+        else:
+            return False
+
+    def n_usrp(self):
+        return len(usrp_dict)
 
 
 if __name__ == '__main__':
