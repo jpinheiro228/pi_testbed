@@ -106,3 +106,4 @@ venv.bak/
 #pycharm
 .idea/
 code/webserver/uploads/*
+code/webserver/flask.sql

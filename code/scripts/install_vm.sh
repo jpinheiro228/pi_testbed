@@ -44,7 +44,7 @@ sudo addgroup usrp
 sudo usermod -aG usrp ubuntu
 echo 'ACTION=="add", BUS=="usb", SYSFS{idVendor}=="fffe", 
 SYSFS{idProduct}=="0002", GROUP:="usrp", MODE:="0660"' > tmpfile
-sudo chown root.root tmpfile
+sudo chown root:root tmpfile
 sudo mv tmpfile /etc/udev/rules.d/10-usrp.rules
 
 sudo /etc/init.d/udev stop
