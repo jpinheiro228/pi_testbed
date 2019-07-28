@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pacman -S qemu libvirt ebtables dnsmasq bridge-utils virt-manager
+pacman -S qemu libvirt ebtables dnsmasq bridge-utils virt-manager openbsd-netcat
 
 usermod -aG libvirt $USER
 
