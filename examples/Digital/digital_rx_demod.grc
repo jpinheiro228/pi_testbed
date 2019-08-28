@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<?grc format='1' created='3.7.11'?>
+<?grc format='1' created='3.7.13'?>
 <flow_graph>
   <timestamp>Tue Sep 23 18:08:27 2014</timestamp>
   <block>
@@ -73,12 +73,20 @@
       <value>True</value>
     </param>
     <param>
+      <key>sizing_mode</key>
+      <value>fixed</value>
+    </param>
+    <param>
       <key>thread_safe_setters</key>
       <value></value>
     </param>
     <param>
       <key>title</key>
       <value>Exemplo Digital demod</value>
+    </param>
+    <param>
+      <key>placement</key>
+      <value>(0,0)</value>
     </param>
   </block>
   <block>
@@ -124,7 +132,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(144, 524)</value>
+      <value>(296, 324)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -241,7 +249,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(8, 524)</value>
+      <value>(160, 324)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -439,7 +447,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(8, 404)</value>
+      <value>(32, 324)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -489,6 +497,10 @@
   <block>
     <key>blocks_file_source</key>
     <param>
+      <key>begin_tag</key>
+      <value>pmt.PMT_NIL</value>
+    </param>
+    <param>
       <key>alias</key>
       <value></value>
     </param>
@@ -510,7 +522,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(56, 148)</value>
+      <value>(48, 140)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -612,7 +624,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(8, 348)</value>
+      <value>(32, 268)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -731,7 +743,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(720, 83)</value>
+      <value>(744, 84)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -786,7 +798,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(712, 224)</value>
+      <value>(736, 224)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -916,7 +928,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(792, 348)</value>
+      <value>(728, 356)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -1263,7 +1275,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(200, 364)</value>
+      <value>(232, 252)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -1630,7 +1642,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(488, 468)</value>
+      <value>(488, 324)</value>
     </param>
     <param>
       <key>gui_hint</key>

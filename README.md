@@ -43,12 +43,13 @@ The server needs to have 2 Ethernet interfaces: one to connect to the internet a
 ### Basic installation
 Here we will install all necessary packages for the server.
 
-```
+```bash
 sudo pacman -S libuhd python2 qemu libvirt ebtables dnsmasq bridge-utils virt-manager dmidecode python-pip
 ```
 
 Also we need to create a user so the experiments can access the private network, so:
-```
+
+```bash
 sudo useradd hop
 sudo passwd hop #to set the password. Use "aicthop"
 ```
@@ -122,7 +123,7 @@ sudo netctl start br0
 #### Setting up iptables for internet forwarding
 So the resources have internet available, we need to enable NAT translation and forward packages from the internet to the internal network and vice versa.
 
-```
+```bash
 sudo su
 echo "net.ipv4.ip_forward=1
 net.ipv6.conf.default.forwarding=1
@@ -137,7 +138,7 @@ sudo iptables -A FORWARD -i br0 -o eno1 -j ACCEPT
 #### Setting up dnsmasq
 Finally we setup a DHCP server using `dnsmasq`.
 
-```
+```bash
 sudo su
 echo 'interface=br0
 bind-interfaces
@@ -147,13 +148,12 @@ dhcp-option=6,8.8.8.8 # DNS
 dhcp-range=10.0.0.100,10.0.0.150,12h
 ' >> /etc/dnsmasq.conf
 exit
-
 ```
 
 ### Web Interface
 The web interface needs to be cloned and its requirements need to be installed.
 
-```
+```bash
 sudo pacman -S python-pip
 git clone https://github.com/jpinheiro228/pi_testbed.git
 cd pi_testbed
@@ -165,7 +165,7 @@ Create a virtual machine with name "default". HINT: to speedup the process, you 
 
 The following commands are to install the latest USRP drivers and the GNU Radio 7.7.13.4, which was tested for usage with this platform.
 
-```
+```bash
 sudo add-apt-repository ppa:ettusresearch/uhd
 
 sudo apt update
@@ -217,7 +217,7 @@ Also, change the interface name on `/etc/netplan/50-cloud-init.yaml` to `ens3`
 Finally, we need to reset the VM on the first run, so the DHCP settings are correctly configured.
 For that, we create a `/etc/rc.local` with the following contents:
 
-```
+```bash
 #!/usr/bin/env bash
 
 rm /home/ubuntu/.bash_history
@@ -239,9 +239,39 @@ This will reset all important settings on the VM and leave it ready for use.
 Note that this needs to be done every time the default image is changed.
 
 ## Raspberry Pi
+The setup Raspberry Pis, firs install the UBUNTU MATE distribution on your SD card by following the instructions from https://ubuntu-mate.org/raspberry-pi/ .
+Remember you need to connect a Display and a keyboard in order to configure your raspberry pi for the firs time.
+
+On the server, create a pair ssh keys so we can manage the raspberry pis without problems:
+```bash
+ssh-keygen -t rsa -b 2048 -f ~/.ssh/vms
+ssh-add ~/.ssh/vms
+```
+
+Allow root ssh access for management (only with key authentication) on the `/etc/ssh/sshd_config` file.
+```text
+PermitRootLogin prohibit-password
+```
+Also, add the public key to the root user on the raspberry pi `/root/.ssh/authorized_keys` and coppy the script `create_user.sh` to the `/root` directory of the Pi
+
+Finally, install gnuradio and the rtl-sdr drivers and utilities:
+```bash
+sudo apt update
+sudo apt dist-upgrade -y
+sudo apt install -y libcanberra-gtk-module gnuradio rtl-sdr gr-osmosdr
+sudo su
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="2838",
+MODE="0666", SYMLINK+="rtl_sdr"'>/etc/udev/rules.d/20.rtlsdr.rules
+exit
+sudo systemctl restart udev
+```
+
+We need to register new raspberry pis into our Frontend by adding its MAC address and hostname to the `<TESTBEDSOURCE>/code/resourcemanager/pi_simple.py`.
+
+OBS: if you have any problems using the RTL-SDR radio on the raspberry pi, try using the gnuradio-companion with sudo.
 
 ## Starting the server
-```
+```bash
 sudo uhd_find_devices
 cd pi_testbed/code/webserver
 python3 server.py
